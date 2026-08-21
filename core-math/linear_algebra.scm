@@ -21,7 +21,9 @@
 (define (x-component-vector vector) (car vector))
 (define (y-component-vector vector) (cdr vector))
 
-(define (vector-add vector-1 vector-2) (make-vector (+ (x-component-vector vector-1) (x-component-vector vector-2)) (+ (y-component-vector vector-1) (y-component-vector vector-2))))
+(define (vector-add vector-1 vector-2)
+  (make-vector (+ (x-component-vector vector-1) (x-component-vector vector-2))
+	       (+ (y-component-vector vector-1) (y-component-vector vector-2))))
 
 (define (scale-vector vector scaling-factor)
   (let ((x (x-component-vector vector))
@@ -37,8 +39,63 @@
 	(y₁ (y-component-vector vector-1))
 	(x₂ (x-component-vector vector-2))
 	(y₂ (y-component-vector vector-2)))
-    (make-vector (* x₁ x₂) (* y₁ y₂))))
+    (+ (* x₁ x₂) (* y₁ y₂))))
 
-(define (matrix-R² vector-1 vector-2) (list vector-1 vector-2))
+(define (I-P₁ vector-1 vector-2) (|.| vector-1 vector-2))
 
-(define (I-P vector-1 vector-2) 
+(define (norm I-P vector) (sqrt (I-P vector vector)))
+
+
+;; Matrices ∈ M²ˣ²(R)
+
+(define (Matrix vector-1 vector-2) (list vector-1 vector-2))
+
+(define (Matrix-add matrix-1 matrix-2)
+  (let ((v₁ (car matrix-1))
+	(v₂ (cadr matrix-1))
+	(v₃ (car matrix-2))
+	(v₄ (cadr matrix-2)))
+    (list (vector-add v₁ v₃) (vector-add v₂ v₄))))
+
+(define matrix-1 (Matrix vector-1 (cons 1 1)))
+(define matrix-2 (Matrix (cons 1 0) (cons 0 1)))
+(Matrix-add matrix-1 matrix-2)
+
+(define (scale-Matrix matrix-1 scaling-factor)
+  (map (lambda (x) (scale-vector x scaling-factor)) matrix-1))
+
+(define (transpose-matrix matrix-1)
+  (let ((v₁₁ (x-component-vector (car matrix-1)))
+	(v₂₁ (y-component-vector (car matrix-1)))
+	(v₁₂ (x-component-vector (cadr matrix-1)))
+	(v₂₂ (y-component-vector (cadr matrix-1))))
+    (Matrix (make-vector v₁₁ v₁₂) (make-vector v₂₁ v₂₂))))
+
+(transpose-matrix matrix-1)
+
+(define (Matrix-product matrix-1 matrix-2)
+  (let ((t-matrix-1 (transpose-matrix matrix-1)))
+    (let ((v₁₁ (|.| (car t-matrix-1) (car matrix-2)))
+	  (v₁₂ (|.| (car t-matrix-1) (cadr matrix-2)))
+	  (v₂₁ (|.| (cadr t-matrix-1) (car matrix-2)))
+	  (v₂₂ (|.| (cadr t-matrix-1) (cadr matrix-2))))
+      (let ((V₁ (make-vector v₁₁ v₂₁))
+	    (V₂ (make-vector v₁₂ v₂₂)))
+	(Matrix V₁ V₂)))))
+
+(define (print-matrix matrix)
+  (let ((v₁₁ (x-component-vector (car matrix)))
+	(v₂₁ (y-component-vector (car matrix)))
+	(v₁₂ (x-component-vector (cadr matrix)))
+	(v₂₂ (y-component-vector (cadr matrix))))
+    (display v₁₁)
+    (display " ")
+    (display v₁₂)
+    (newline)
+    (display v₂₁)
+    (display " ")
+    (display v₂₂)))
+
+(print-matrix (transpose-matrix matrix-1))
+(print-matrix (Matrix-product matrix-1 matrix-2))
+
