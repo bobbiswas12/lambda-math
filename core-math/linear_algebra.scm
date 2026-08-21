@@ -108,3 +108,9 @@
     (display v₂₂)))
 
 (print-matrix (Matrix-product Identity matrix-1))
+
+(define matrix₁ (Matrix (make-vector 1 0) (make-vector 0 1)))
+(define matrix₂ (Matrix (make-vector 2 0) (make-vector 0 2)))
+(print-matrix (Matrix-product matrix₁ matrix₂))
+
+(print-matrix (transpose-matrix (Matrix (make-vector 6 7) (make-vector 6 9))))
