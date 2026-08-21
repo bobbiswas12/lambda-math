@@ -34,17 +34,28 @@
 
 (define (vector-sub vector-1 vector-2) (vector-add vector-1 (scale-vector vector-2 -1)))
 
-(define (|.| vector-1 vector-2)
+(define (dot-product vector-1 vector-2)
   (let ((x₁ (x-component-vector vector-1))
 	(y₁ (y-component-vector vector-1))
 	(x₂ (x-component-vector vector-2))
 	(y₂ (y-component-vector vector-2)))
     (+ (* x₁ x₂) (* y₁ y₂))))
 
-(define (I-P₁ vector-1 vector-2) (|.| vector-1 vector-2))
+(define (I-P₁ vector-1 vector-2) (dot-product vector-1 vector-2))
 
 (define (norm I-P vector) (sqrt (I-P vector vector)))
 
+(define (distance vector-1 vector-2)
+  (norm I-P₁ (vector-sub vector-1 vector-2)))
+
+(define (projection vector-1 vector-2)
+  (let ((denominator (norm I-P₁ vector-2)))
+    (if (= 0 denominator)
+	(display "Projection not defined")
+	(let ((scaling-factor₁ (dot-product vector-1 (scale-vector vector-2 (/ 1 denominator)))))
+	  (scale-vector (scale-vector vector-2 (/ 1 denominator)) scaling-factor₁)))))
+
+(projection (cons 3 4) (cons 10 0))
 
 ;; Matrices ∈ M²ˣ²(R)
 
@@ -58,7 +69,7 @@
     (list (vector-add v₁ v₃) (vector-add v₂ v₄))))
 
 (define matrix-1 (Matrix vector-1 (cons 1 1)))
-(define matrix-2 (Matrix (cons 1 0) (cons 0 1)))
+(define Identity (Matrix (cons 1 0) (cons 0 1)))
 (Matrix-add matrix-1 matrix-2)
 
 (define (scale-Matrix matrix-1 scaling-factor)
@@ -75,10 +86,10 @@
 
 (define (Matrix-product matrix-1 matrix-2)
   (let ((t-matrix-1 (transpose-matrix matrix-1)))
-    (let ((v₁₁ (|.| (car t-matrix-1) (car matrix-2)))
-	  (v₁₂ (|.| (car t-matrix-1) (cadr matrix-2)))
-	  (v₂₁ (|.| (cadr t-matrix-1) (car matrix-2)))
-	  (v₂₂ (|.| (cadr t-matrix-1) (cadr matrix-2))))
+    (let ((v₁₁ (dot-product (car t-matrix-1) (car matrix-2)))
+	  (v₁₂ (dot-product (car t-matrix-1) (cadr matrix-2)))
+	  (v₂₁ (dot-product (cadr t-matrix-1) (car matrix-2)))
+	  (v₂₂ (dot-product (cadr t-matrix-1) (cadr matrix-2))))
       (let ((V₁ (make-vector v₁₁ v₂₁))
 	    (V₂ (make-vector v₁₂ v₂₂)))
 	(Matrix V₁ V₂)))))
@@ -96,6 +107,4 @@
     (display " ")
     (display v₂₂)))
 
-(print-matrix (transpose-matrix matrix-1))
-(print-matrix (Matrix-product matrix-1 matrix-2))
-
+(print-matrix (Matrix-product Identity matrix-1))
