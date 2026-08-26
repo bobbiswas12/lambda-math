@@ -100,9 +100,6 @@
 	  (iter (cdr vector)))))
   (iter vector))
 
-(print-column-vector vector-1)
-(print-row-vector vector-1)
-
 ;; Matrices ∈ Mᵐˣⁿ(R)
 
 (define (Matrix . xs) xs)
@@ -132,11 +129,12 @@
 (define (Matrix-product M₁ M₂)
   (if (Matrix-multiplicable? M₁ M₂)
       (let ((M₁ᵀ (Matrix-transpose M₁)))	     
-	(Matrix-transpose (map (lambda (vᵢ)
-	       (map (lambda (vⱼ)
-		      (dot-product vᵢ vⱼ))
-		    M₂))
-	     M₁ᵀ)))
+	(Matrix-transpose
+	 (map (lambda (vᵢ)
+		(map (lambda (vⱼ)
+		       (dot-product vᵢ vⱼ))
+		     M₂))
+	      M₁ᵀ)))
       (display "Not Defined!")))
 
 (define I₃ₓ₃ (Matrix (make-vector 1 0 0) (make-vector 0 1 0) (make-vector 0 0 1)))
@@ -145,6 +143,19 @@
   (if (= 1 (dimension M₁)) (print-column-vector (car M₁))
       (let ((M₁ᵀ (Matrix-transpose M₁)))
 	(map (lambda (x) (print-row-vector x)) M₁ᵀ))))
-  
+
+(define (is-square? M₁)
+  (= (dimension M₁) (dimension (car M₁))))
+
+(define (Matrix-trace M₁)
+  (cond ((is-square? M₁)
+	 (begin
+	   (define (iter i M₁)
+	     (if (null? M₁) 0
+		 (+ (component i (car M₁)) (iter (+ i 1) (cdr M₁)))))
+	   (iter 1 M₁)))
+	(else
+	 (display "Trace isn't defined for a non-square Matrix"))))
+
 
   
