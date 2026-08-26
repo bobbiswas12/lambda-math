@@ -33,10 +33,16 @@
 	       (iter (+ 1 value) (cdr vector))))
 	 (iter 1 vector))))
 
+(define (equi-dim v₁ v₂)
+  (= (dimension v₁) (dimension v₂)))
+
 (define (vector-add v₁ v₂)
-  (if (null? v₁) '()
-      (make-vector (+ (car v₁) (car v₂)) (vector-add (cdr v₁) (cdr v₂)))))
+  (cond ((equi-dim v₁ v₂)
+	 (if (null? v₁) '()
+	     (map + v₁ v₂)))
+	(else (display "Unequal Dimensional Vector Addition Error"))))
 (vector-add vector-1 vector-1)
+(vector-add vector-1 (list 1 2 3))
 
 (define (scale-vector vector scaling-factor)
   (map (lambda (x) (* x scaling-factor)) vector))
@@ -47,3 +53,90 @@
   (vector-add v₁ (scale-vector v₂ -1)))
 
 (vector-sub vector-1 vector-1)
+
+(define (dot-product v₁ v₂)
+  (cond ((equi-dim v₁ v₂)
+	 (if (null? v₁) 0
+	     (+ (* (car v₁) (car v₂)) (dot-product (cdr v₁) (cdr v₂)))))))
+
+(dot-product vector-1 vector-1)
+
+(define (norm∞ vector)
+  (if (= (dimension vector) 0) 0
+      (let ((vector-new (map abs vector)))
+	(define (iter current  vector-1)
+	  (if (null? vector-1) current
+	      (if (>= current (car vector-1)) (iter current (cdr vector-1))
+		  (iter (car vector-1) (cdr vector-1)))))
+	(iter (car vector-new) (cdr vector-new)))))
+
+(define (norm₂ vector)
+  (sqrt (dot-product vector vector)))
+
+(define (norm₁ vector)
+  (if (= (dimension vector) 0) 0
+      (if (null? vector) 0
+	  (+ (abs (car vector)) (norm₁ (cdr vector))))))
+
+(define (distance norm v₁ v₂)
+  (norm (vector-sub v₁ v₂)))
+
+(distance norm∞ vector-1 vector-1)
+
+(define (projection vector-1 vector-2)
+  (let ((denominator (norm₂ vector-2)))
+    (if (= 0 denominator)
+	(display "Projection not defined")
+	(let ((scaling-factor₁ (dot-product vector-1 (scale-vector vector-2 (/ 1 denominator)))))
+	  (scale-vector (scale-vector vector-2 (/ 1 denominator)) scaling-factor₁)))))
+
+(define (print-vector vector)
+  (define (iter vector)
+    (if (null? vector) '()
+	(begin
+	  (display (car vector))
+	  (newline)
+	  (iter (cdr vector)))))
+  (iter vector))
+
+(print-vector vector-1)
+
+;; Matrices ∈ Mᵐˣⁿ(R)
+
+(define (Matrix . xs) xs)
+
+(define (mutable? M₁ M₂)
+  (and (equi-dim M₁ M₂) (equi-dim (car M₁) (car M₂))))
+
+(define (Matrix-add M₁ M₂)
+  (cond ((mutable? M₁ M₂)
+	 (map (lambda (x y) (vector-add x y)) M₁ M₂))
+	(else
+	 (display "Addition Not defined!"))))
+
+
+(define (Matrix-transpose M)
+  (if (null? (car M)) '()
+      (cons (map car M) (Matrix-transpose (map cdr M)))))
+
+(define (Matrix-multiplicable? M₁ M₂)
+  (= (dimension M₁) (dimension (car M₂))))
+
+(define (Matrix-product M₁ M₂)
+  (if (Matrix-multiplicable? M₁ M₂)
+      (let ((M₁ᵀ (Matrix-transpose M₁)))	     
+	(Matrix-transpose (map (lambda (vᵢ)
+	       (map (lambda (vⱼ)
+		      (dot-product vᵢ vⱼ))
+		    M₂))
+	     M₁ᵀ)))
+      (display "Not Defined!")))
+
+(define I₃ₓ₃ (Matrix (make-vector 1 0 0) (make-vector 0 1 0) (make-vector 0 0 1)))
+
+(Matrix-transpose I₃ₓ₃)
+(define M₁ (Matrix (make-vector 1 2 3)))
+
+(Matrix-product I₃ₓ₃ M₁)
+
+  
