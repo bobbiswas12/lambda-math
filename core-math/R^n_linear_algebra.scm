@@ -41,25 +41,17 @@
 	 (if (null? v₁) '()
 	     (map + v₁ v₂)))
 	(else (display "Unequal Dimensional Vector Addition Error"))))
-(vector-add vector-1 vector-1)
-(vector-add vector-1 (list 1 2 3))
 
 (define (scale-vector vector scaling-factor)
   (map (lambda (x) (* x scaling-factor)) vector))
 
-(scale-vector vector-1 4)
-
 (define (vector-sub v₁ v₂)
   (vector-add v₁ (scale-vector v₂ -1)))
-
-(vector-sub vector-1 vector-1)
 
 (define (dot-product v₁ v₂)
   (cond ((equi-dim v₁ v₂)
 	 (if (null? v₁) 0
 	     (+ (* (car v₁) (car v₂)) (dot-product (cdr v₁) (cdr v₂)))))))
-
-(dot-product vector-1 vector-1)
 
 (define (norm∞ vector)
   (if (= (dimension vector) 0) 0
@@ -81,8 +73,6 @@
 (define (distance norm v₁ v₂)
   (norm (vector-sub v₁ v₂)))
 
-(distance norm∞ vector-1 vector-1)
-
 (define (projection vector-1 vector-2)
   (let ((denominator (norm₂ vector-2)))
     (if (= 0 denominator)
@@ -90,7 +80,7 @@
 	(let ((scaling-factor₁ (dot-product vector-1 (scale-vector vector-2 (/ 1 denominator)))))
 	  (scale-vector (scale-vector vector-2 (/ 1 denominator)) scaling-factor₁)))))
 
-(define (print-vector vector)
+(define (print-column-vector vector)
   (define (iter vector)
     (if (null? vector) '()
 	(begin
@@ -99,7 +89,19 @@
 	  (iter (cdr vector)))))
   (iter vector))
 
-(print-vector vector-1)
+(define (print-row-vector vector)
+  (define (iter vector)
+    (if (null? vector) (begin
+			 (newline)
+			 '())
+	(begin
+	  (display (car vector))
+	  (display " ")
+	  (iter (cdr vector)))))
+  (iter vector))
+
+(print-column-vector vector-1)
+(print-row-vector vector-1)
 
 ;; Matrices ∈ Mᵐˣⁿ(R)
 
@@ -108,12 +110,17 @@
 (define (mutable? M₁ M₂)
   (and (equi-dim M₁ M₂) (equi-dim (car M₁) (car M₂))))
 
+(define (Matrix-scale M₁ k)
+  (map (lambda (x) (scale-vector x k)) M₁))
+
 (define (Matrix-add M₁ M₂)
   (cond ((mutable? M₁ M₂)
 	 (map (lambda (x y) (vector-add x y)) M₁ M₂))
 	(else
 	 (display "Addition Not defined!"))))
 
+(define (Matrix-sub M₁ M₂)
+  (Matrix-add M₁ (Matrix-scale M₂ -1)))
 
 (define (Matrix-transpose M)
   (if (null? (car M)) '()
@@ -134,9 +141,10 @@
 
 (define I₃ₓ₃ (Matrix (make-vector 1 0 0) (make-vector 0 1 0) (make-vector 0 0 1)))
 
-(Matrix-transpose I₃ₓ₃)
-(define M₁ (Matrix (make-vector 1 2 3)))
-
-(Matrix-product I₃ₓ₃ M₁)
+(define (print-matrix M₁)
+  (if (= 1 (dimension M₁)) (print-column-vector (car M₁))
+      (let ((M₁ᵀ (Matrix-transpose M₁)))
+	(map (lambda (x) (print-row-vector x)) M₁ᵀ))))
+  
 
   
